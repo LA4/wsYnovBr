@@ -4,11 +4,11 @@ const MAX_PLAYERS = 4;
 const PLAYER_HP = 10;
 const OBSTACLE_HP = 2;
 const OBSTACLE_STOCK = 3;
-const ATTACK_COST = 2;
+const ATTACK_COST = 0;
 const ATTACK_DAMAGE = 2;
 const MOVE_RANGE = 3;
 const ATTACK_RANGE = 2;
-const ALLOWED_GRID_SIZES = 9;
+const ALLOWED_GRID_SIZES = [9];
 
 const toInt = (value) => {
   const parsed = parseInt(value, 10);
@@ -16,7 +16,7 @@ const toInt = (value) => {
 };
 
 class GameStateManager {
-  constructor(initialGridSize = ALLOWED_GRID_SIZES) {
+  constructor(initialGridSize = ALLOWED_GRID_SIZES[0]) {
     this.state = this.createInitialState(initialGridSize);
   }
 
