@@ -20,6 +20,16 @@ let selectedAction = null;
 let latestState = null;
 let victoryDisplayed = false;
 
+const createPlayerIcon = () => {
+  const wrapper = document.createElement("span");
+  wrapper.className = "cell-icon player-icon";
+  const icon = document.createElement("i");
+  icon.className = "fa-solid fa-chess-knight";
+  icon.setAttribute("aria-hidden", "true");
+  wrapper.appendChild(icon);
+  return wrapper;
+};
+
 const getWsUrl = () => {
   const protocol = window.location.protocol === "https:" ? "wss" : "ws";
   return `${protocol}://${window.location.host}`;
@@ -288,7 +298,13 @@ const renderGrid = () => {
         const occupant = playersMap.get(key);
         cell.classList.add("player");
         cell.style.backgroundColor = occupant.couleur;
-        cell.textContent = occupant.pseudo[0]?.toUpperCase() ?? "J";
+        const icon = createPlayerIcon();
+
+        const label = document.createElement("span");
+        label.className = "cell-label";
+        label.textContent = occupant.pseudo[0]?.toUpperCase() ?? "J";
+
+        cell.append(icon, label);
         if (occupant.id === latestState.currentPlayerTurn) {
           cell.classList.add("current");
         }
@@ -298,7 +314,15 @@ const renderGrid = () => {
       } else if (obstacleMap.has(key)) {
         const obstacle = obstacleMap.get(key);
         cell.classList.add("obstacle");
-        cell.textContent = obstacle.pdv;
+        const icon = document.createElement("span");
+        icon.className = "cell-icon obstacle-icon";
+        icon.textContent = "🛡";
+
+        const hpLabel = document.createElement("span");
+        hpLabel.className = "cell-label obstacle-hp";
+        hpLabel.textContent = `${obstacle.pdv} PV`;
+
+        cell.append(icon, hpLabel);
         cell.title = `Obstacle (${obstacle.pdv} PDV)`;
       }
 
