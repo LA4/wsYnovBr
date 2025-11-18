@@ -126,11 +126,15 @@ class GameStateManager {
   }
 
   executeAttack(playerId, target) {
+    // player qui joue
     const player = this.requireActivePlayer(playerId);
+    // verifie qu'on est bien dans la grille
     this.ensureTargetValid(target);
+    // on vérifie qu'on est bien en ligne
     if (!this.isStraightLine(player.position, target)) {
       throw new Error("Attaque en ligne droite uniquement.");
     }
+    // on vérifie que la portée est la bonne
     const distance = this.distance(player.position, target);
     if (distance === 0 || distance > ATTACK_RANGE) {
       throw new Error("La portée maximale est de 2 cases.");
@@ -141,6 +145,12 @@ class GameStateManager {
       throw new Error("Aucune cible dans cette direction.");
     }
 
+    const explicitTarget =
+      this.getPlayerAt(target) || this.getObstacleAt(target);
+    if (explicitTarget && entityHit.entity.id !== explicitTarget.id) {
+      throw new Error("Une entité bloque votre attaque.");
+    }
+
     player.pdv -= ATTACK_COST;
     if (player.pdv <= 0) {
       this.markPlayerDefeated(player.id);
@@ -148,6 +158,7 @@ class GameStateManager {
 
     if (entityHit.type === "player") {
       entityHit.entity.pdv -= ATTACK_DAMAGE;
+
       if (entityHit.entity.pdv <= 0) {
         this.markPlayerDefeated(entityHit.entity.id);
       }
@@ -256,12 +267,13 @@ class GameStateManager {
     }
     return true;
   }
-
+  // trouve la première entité dans la direction de l'attaque
   findFirstEntity(start, target) {
     const dx = Math.sign(target.x - start.x);
     const dy = Math.sign(target.y - start.y);
     let x = start.x + dx;
     let y = start.y + dy;
+    // on parcourt la grille jusqu'à trouver la première entité dans la direction de l'attaque
     while (
       x >= 0 &&
       y >= 0 &&
@@ -269,21 +281,26 @@ class GameStateManager {
       y < this.state.gridSize &&
       Math.abs(x - start.x) + Math.abs(y - start.y) <= ATTACK_RANGE
     ) {
+      // on vérifie si la case est occupée par un joueur ou un obstacle
       const pos = { x, y };
       const player = this.getPlayerAt(pos);
       if (player) {
         return { type: "player", entity: player };
       }
+
       const obstacle = this.getObstacleAt(pos);
       if (obstacle) {
         return { type: "obstacle", entity: obstacle };
       }
+      // on a trouvé l'entité dans la direction de l'attaque
       if (x === target.x && y === target.y) {
         break;
       }
+      // on avance dans la direction de l'attaque
       x += dx;
       y += dy;
     }
+    // on n'a pas trouvé d'entité dans la direction de l'attaque
     return null;
   }
 
