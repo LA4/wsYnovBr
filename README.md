@@ -19,10 +19,9 @@ Le serveur HTTP et WebSocket écoute par défaut sur `http://localhost:3000` et 
 
 ## Configuration
 
-| Variable    | Valeur par défaut | Description                                                                                 |
-| ----------- | ----------------- | ------------------------------------------------------------------------------------------- |
-| `PORT`      | `3000`            | Port HTTP / WebSocket.                                                                      |
-| `GRID_SIZE` | `9`               | Taille initiale de la grille (9 ou 12). Peut aussi être définie par le 1er joueur via l’UI. |
+| Variable | Valeur par défaut | Description            |
+| -------- | ----------------- | ---------------------- |
+| `PORT`   | `3000`            | Port HTTP / WebSocket. |
 
 ## Structure
 
