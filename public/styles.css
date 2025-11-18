@@ -284,6 +284,78 @@ button:hover {
   line-height: 1;
 }
 
+.winner-icon {
+  margin-left: 0.35rem;
+  font-size: 1.2rem;
+}
+
+.victory-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.victory-modal.visible {
+  display: flex;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 6, 10, 0.85);
+  backdrop-filter: blur(6px);
+}
+
+.modal-content {
+  position: relative;
+  background: #141622;
+  border: 1px solid #facc15;
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  animation: pop-in 0.4s ease-out forwards;
+}
+
+.modal-content button {
+  margin-top: 1.25rem;
+  min-width: 200px;
+  font-size: 1rem;
+  border-color: #facc15;
+  color: #facc15;
+}
+
+.victory-icon {
+  font-size: 3rem;
+  display: inline-block;
+  animation: bounce 1.2s infinite;
+  margin-bottom: 0.5rem;
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
 @media (max-width: 960px) {
   .layout {
     grid-template-columns: 1fr;

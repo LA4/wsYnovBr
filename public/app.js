@@ -9,11 +9,16 @@ const logEl = document.getElementById("log");
 const gameStatusEl = document.getElementById("game-status");
 const turnStatusEl = document.getElementById("turn-status");
 const winnerStatusEl = document.getElementById("winner-status");
+const victoryModal = document.getElementById("victory-modal");
+const victoryTitleEl = document.getElementById("victory-title");
+const victoryMessageEl = document.getElementById("victory-message");
+const resetGameBtn = document.getElementById("reset-game-btn");
 
 let socket;
 let playerId = null;
 let selectedAction = null;
 let latestState = null;
+let victoryDisplayed = false;
 
 const getWsUrl = () => {
   const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -66,6 +71,9 @@ const routeMessage = ({ type, payload }) => {
         showLog("Partie terminée sans gagnant.", "error");
       }
       break;
+    case "GAME_RESET":
+      handleGameReset(payload);
+      break;
     default:
       break;
   }
@@ -74,6 +82,12 @@ const routeMessage = ({ type, payload }) => {
 const disableJoinForm = () => {
   joinForm.querySelectorAll("input, select, button").forEach((el) => {
     el.disabled = true;
+  });
+};
+
+const enableJoinForm = () => {
+  joinForm.querySelectorAll("input, select, button").forEach((el) => {
+    el.disabled = false;
   });
 };
 
@@ -138,11 +152,24 @@ gridEl.addEventListener("click", (event) => {
   });
 });
 
+if (resetGameBtn) {
+  resetGameBtn.addEventListener("click", () => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      showLog("Connexion WebSocket indisponible.", "error");
+      return;
+    }
+    resetGameBtn.disabled = true;
+    resetGameBtn.textContent = "Relance en cours...";
+    sendMessage("RESET_GAME");
+  });
+}
+
 const renderState = () => {
   if (!latestState) return;
   renderPlayers();
   renderStatus();
   renderGrid();
+  maybeShowVictoryModal();
 };
 
 const renderPlayers = () => {
@@ -164,6 +191,18 @@ const renderPlayers = () => {
     name.textContent = player.pseudo;
 
     info.append(colorDot, name);
+
+    if (
+      latestState.gameStatus === "Finished" &&
+      latestState.winnerId &&
+      player.id === latestState.winnerId
+    ) {
+      const winnerIcon = document.createElement("span");
+      winnerIcon.className = "winner-icon";
+      winnerIcon.textContent = "🏆";
+      winnerIcon.title = "Gagnant";
+      info.appendChild(winnerIcon);
+    }
 
     const stats = document.createElement("div");
     stats.className = "player-stats";
@@ -215,7 +254,7 @@ const renderStatus = () => {
   }
 
   winnerStatusEl.textContent = latestState.winner
-    ? `Gagnant : ${latestState.winner}`
+    ? `Gagnant : ${latestState.winner} 🏆`
     : "";
 };
 
@@ -266,6 +305,57 @@ const renderGrid = () => {
       gridEl.appendChild(cell);
     }
   }
+};
+
+const maybeShowVictoryModal = () => {
+  if (!victoryModal || !latestState) return;
+  if (latestState.gameStatus === "Finished" && !victoryDisplayed) {
+    showVictoryModal();
+  } else if (victoryDisplayed && latestState.gameStatus !== "Finished") {
+    hideVictoryModal();
+  }
+};
+
+const showVictoryModal = () => {
+  if (!victoryModal || !latestState) return;
+  const hasWinner = Boolean(latestState.winner);
+  if (victoryTitleEl) {
+    victoryTitleEl.textContent = hasWinner
+      ? `${latestState.winner} remporte la partie !`
+      : "Match nul";
+  }
+  if (victoryMessageEl) {
+    victoryMessageEl.textContent = hasWinner
+      ? "Bravo ! Relancez une partie pour continuer."
+      : "Aucun vainqueur. Cliquez sur le bouton pour relancer.";
+  }
+  victoryModal.classList.add("visible");
+  victoryModal.setAttribute("aria-hidden", "false");
+  victoryDisplayed = true;
+  if (resetGameBtn) {
+    resetGameBtn.disabled = false;
+    resetGameBtn.textContent = "Nouvelle partie";
+  }
+};
+
+const hideVictoryModal = () => {
+  if (!victoryModal) return;
+  victoryModal.classList.remove("visible");
+  victoryModal.setAttribute("aria-hidden", "true");
+  victoryDisplayed = false;
+};
+
+const handleGameReset = (payload = {}) => {
+  playerId = null;
+  selectedAction = null;
+  actionButtons.forEach((btn) => btn.classList.remove("active"));
+  enableJoinForm();
+  hideVictoryModal();
+  if (resetGameBtn) {
+    resetGameBtn.disabled = false;
+    resetGameBtn.textContent = "Nouvelle partie";
+  }
+  showLog(payload.message || "Nouvelle partie disponible.", "success");
 };
 
 const showLog = (message, level = "info") => {

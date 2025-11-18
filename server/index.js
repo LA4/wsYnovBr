@@ -70,6 +70,9 @@ wss.on("connection", (ws) => {
       case "REQUEST_ACTION":
         handleRequestAction(ws, payload);
         break;
+      case "RESET_GAME":
+        handleResetGame(ws);
+        break;
       default:
         send(ws, "ACTION_INVALID", { message: "Type de message inconnu." });
     }
@@ -146,6 +149,26 @@ const handleRequestAction = (ws, payload = {}) => {
   } catch (error) {
     send(ws, "ACTION_INVALID", { message: error.message });
   }
+};
+
+const handleResetGame = (ws) => {
+  if (game.state.gameStatus !== "Finished") {
+    send(ws, "ACTION_INVALID", {
+      message: "La partie n'est pas terminée.",
+    });
+    return;
+  }
+
+  game.resetGame();
+
+  clients.forEach((meta, clientWs) => {
+    clients.set(clientWs, { type: "spectator" });
+    send(clientWs, "GAME_RESET", {
+      message: "Nouvelle partie disponible. Rejoignez le lobby.",
+    });
+  });
+
+  broadcastGameState();
 };
 
 const handleDisconnect = (ws) => {

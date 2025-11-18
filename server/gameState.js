@@ -1,7 +1,7 @@
 const { randomUUID } = require("crypto");
 
-const MAX_PLAYERS = 4;
-const PLAYER_HP = 10;
+const MAX_PLAYERS = 2;
+const PLAYER_HP = 2;
 const OBSTACLE_HP = 2;
 const OBSTACLE_STOCK = 3;
 const ATTACK_COST = 0;
@@ -28,6 +28,7 @@ class GameStateManager {
       obstacles: [],
       currentPlayerTurn: null,
       winner: null,
+      winnerId: null,
     };
   }
 
@@ -367,10 +368,16 @@ class GameStateManager {
     if (active.length === 1 && this.state.gameStatus === "InProgress") {
       this.state.gameStatus = "Finished";
       this.state.winner = active[0].pseudo;
+      this.state.winnerId = active[0].id;
     } else if (active.length === 0 && this.state.gameStatus === "InProgress") {
       this.state.gameStatus = "Finished";
       this.state.winner = null;
+      this.state.winnerId = null;
     }
+  }
+
+  resetGame(gridSize = this.state.gridSize || ALLOWED_GRID_SIZES[0]) {
+    this.state = this.createInitialState(gridSize);
   }
 
   normalizeColor(color) {
