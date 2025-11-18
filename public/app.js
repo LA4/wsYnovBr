@@ -24,7 +24,7 @@ const createPlayerIcon = () => {
   const wrapper = document.createElement("span");
   wrapper.className = "cell-icon player-icon";
   const icon = document.createElement("i");
-  icon.className = "fa-solid fa-chess-knight";
+  icon.className = "fa-solid fa-user";
   icon.setAttribute("aria-hidden", "true");
   wrapper.appendChild(icon);
   return wrapper;
@@ -302,7 +302,7 @@ const renderGrid = () => {
 
         const label = document.createElement("span");
         label.className = "cell-label";
-        label.textContent = occupant.pseudo[0]?.toUpperCase() ?? "J";
+        label.textContent = "";
 
         cell.append(icon, label);
         if (occupant.id === latestState.currentPlayerTurn) {
